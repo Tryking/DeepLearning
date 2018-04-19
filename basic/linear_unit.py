@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from perceptron import Perceptron
+from basic.perceptron import Perceptron
 
 # 定义激活函数
 f = lambda x: x
