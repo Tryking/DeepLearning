@@ -67,16 +67,17 @@ class IMDB_LSTM(object):
         for row in data.itertuples(index=True, name='Pandas'):
             clean_str = clean_data.basic_clean_str(getattr(row, 'review'))
             clean_str = clean_data.customized_clean_str(clean_str)
-            new_data.append([[clean_str, getattr(row, 'sentiment')]])
+            new_data = new_data.append([[clean_str, getattr(row, 'sentiment')]], ignore_index=True)
         new_data.columns = ['review', 'sentiment']
         return new_data
 
-    def interface(self, data):
-
+    @staticmethod
+    def interface(data):
         # 转化为词向量
         tokenizer = Tokenizer(num_words=10, lower=True, split=' ')
-        texts = tokenizer.fit_on_texts(data)
-        print(texts)
+        tokenizer.fit_on_texts(data)
+        sequences = tokenizer.texts_to_sequences(data)
+        print(sequences)
 
 
 if __name__ == '__main__':
