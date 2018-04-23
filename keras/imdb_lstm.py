@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import numpy as np
 import pyprind
+import logging
+from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from libs import clean_data
 
@@ -14,16 +16,6 @@ from keras.layers import LSTM
 from keras.datasets import imdb
 
 
-# max_features = 20000
-# (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=max_features)
-# print(x_train.shape)
-# print(y_train.shape)
-# print(x_test.shape)
-# print(y_test.shape)
-# print(x_train[0])
-# print(y_train)
-
-
 class IMDB_LSTM(object):
     def __init__(self):
         self.pbar = pyprind.ProgBar(50000)
@@ -32,16 +24,15 @@ class IMDB_LSTM(object):
         data_file_train_path = '/home/dengkaiting/pycharm_project/aclImdb/move_data_train.csv'
         data_file_test_path = '/home/dengkaiting/pycharm_project/aclImdb/move_data_test.csv'
         if os.path.isfile(data_file_train_path) and os.path.isfile(data_file_test_path):
-            print('data exist')
+            logging.info('data exist')
         else:
-            print('generate data...')
+            logging.info('generate data...')
             labels = {'pos': 1, 'neg': 0}
             data_train = pd.DataFrame()
             data_test = pd.DataFrame()
             for train_type in ('test', 'train'):
                 for sentiment in ('pos', 'neg'):
                     path = '/home/dengkaiting/pycharm_project/aclImdb/%s/%s' % (train_type, sentiment)
-                    print(path)
                     for file in os.listdir(path):
                         with open(os.path.join(path, file), 'r', encoding='UTF-8') as f:
                             content = f.read()
@@ -72,17 +63,50 @@ class IMDB_LSTM(object):
         return new_data
 
     @staticmethod
-    def interface(data):
+    def interface(train_data, validation_data):
+        train_data_Y = train_data['sentiment']
+        validation_data_Y = validation_data['sentiment']
         # 转化为词向量
-        tokenizer = Tokenizer(num_words=10, lower=True, split=' ')
-        tokenizer.fit_on_texts(data)
-        sequences = tokenizer.texts_to_sequences(data)
-        print(sequences)
+        max_feature = 100
+
+        tokenizer = Tokenizer(num_words=max_feature, lower=True, split=' ')
+        tokenizer.fit_on_texts(train_data['review'].values)
+
+        X_train = tokenizer.texts_to_sequences(train_data['review'].values)
+        X_validation = tokenizer.texts_to_sequences(validation_data['review'].values)
+
+        # 填充序列到相同的长度    Pads sequences to the same length
+        X_train = pad_sequences(X_train)
+        X_validation = pad_sequences(X_validation)
+        logging.info('train sequences :%s' % len(X_train))
+        logging.info('validation sequences :%s' % len(X_validation))
+
+        embed_dim = 3
+        batch_size = 32
+
+        model = Sequential()
+        model.add(Embedding(input_dim=max_feature, output_dim=embed_dim))
+        model.add(LSTM(units=embed_dim, dropout=0.2, recurrent_dropout=0.2))
+        model.add(Dense(units=1, activation='softmax'))
+
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+        logging.info(model.summary())
+
+        model.fit(X_train, train_data_Y, batch_size=batch_size, epochs=1, verbose=5, validation_data=(X_validation, validation_data_Y))
+        score, acc = model.evaluate(X_validation, validation_data_Y, verbose=2, batch_size=batch_size)
+        logging.info('Score: %.2f' % score)
+        logging.info('Validation Accuracy: %.2f' % acc)
 
 
 if __name__ == '__main__':
+    fmt = '%(asctime)s %(levelname)s %(message)s'
+    logging.basicConfig(format=fmt, level=logging.INFO)
     imdb_lstm = IMDB_LSTM()
     data_train, data_test = imdb_lstm.load_data()
+    data_train = data_train.sample(frac=0.05)
+    data_test = data_test.sample(frac=0.5)
     data_train = imdb_lstm.clean_data(data_train)
-    imdb_lstm.interface(data_train[0:500]['review'].values)
-    print('over')
+    data_test = imdb_lstm.clean_data(data_test)
+    imdb_lstm.interface(data_train, data_test)
+    logging.info('over')
