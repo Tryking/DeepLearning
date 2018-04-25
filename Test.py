@@ -20,6 +20,7 @@ import logging
 
 import re
 
-str = 'id="4123274" url="https://zh.wikipedia.org/wiki?curid=4123274" title="弗兰克·皮尔森"> '
-match = re.match('<doc', str)
-print(match.span())
+string = '我很很 很很 很很  好'
+string = re.sub(r"\s{2,}", " ", string)
+
+print(string)

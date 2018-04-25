@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from pyltp import Segmentor
+import clean_data
 
 
 # 清理 wiki 数据的 <doc> 标签
@@ -77,11 +78,10 @@ class CleanData(object):
                     lines = f.readlines()
                     for line in lines:
                         content = line.strip()
-                        content = re.sub("[\s+\.\!\/_,$%^*(+\"\']+|[+——！，。？、：~@#￥%……&*（）]+|[A-Za-z0-9]+", "", content)
+                        content = re.sub("[\s+\.\!\/_,$%^*(+\"\']+|[+——！，《》<>。？、：~@#￥%……&*（）]+|[A-Za-z0-9]+", "", content)
+                        content = re.sub(r"\s{2,}", " ", content)  # Akara is    handsome --> Akara is handsome (去除多余的空格)
                         new_f.write(content)
                         new_f.write('\n')
-
-            pass
         except Exception as e:
             logging.error(str(e))
 
