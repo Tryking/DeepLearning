@@ -24,5 +24,5 @@ def norm(number):
     return map(lambda m: 0.9 if number & m else 0.1, mask)
 
 
-print(mask)
-print(list(norm(2)))
+print(11 / 2)
+print(11 // 2)

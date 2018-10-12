@@ -1,3 +1,5 @@
+import time
+
 from aip import AipOcr
 
 """ 你的 APPID AK SK """
@@ -14,7 +16,7 @@ def get_file_content(filePath):
         return fp.read()
 
 
-image = get_file_content('test.png')
+image = get_file_content('test.jpg')
 
 """ 调用通用文字识别, 图片参数为本地图片 """
 client.basicGeneral(image)
@@ -27,8 +29,11 @@ options["detect_language"] = "true"
 options["probability"] = "true"
 
 """ 带参数调用通用文字识别, 图片参数为本地图片 """
+start = time.time()
 general = client.basicGeneral(image, options)
+cost = round(time.time() - start, ndigits=1)
 print(general)
+print('\ncost: %s s' % cost)
 
 # url = "https//www.x.com/sample.jpg"
 #
