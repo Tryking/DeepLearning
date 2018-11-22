@@ -1,7 +1,6 @@
 """
 Numpy
 """
-import numpy as np
 from scipy.misc import imread, imsave, imresize
 from scipy.spatial.distance import pdist, squareform
 import numpy as np
