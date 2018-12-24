@@ -1,28 +1,15 @@
-from functools import reduce
+from sklearn.preprocessing import LabelBinarizer
+import flashtext
 
-import requests
+cities = ['猫', '狗', '熊猫', '熊猫']
+encoder = LabelBinarizer()
+city_labels = encoder.fit_transform(cities)
+print(city_labels)
+# output：
+# [[0 0 1]
+#  [0 1 0]
+#  [1 0 0]]
 
-s = [1, 2, 3, 4, 5, 6, ]
-print(s[-3:-1])
-print(s[-3::-1])
-print(s[-3:-5:-1])
-print(s[-3::1])
-print(s[1:3])
-print(s[1::3])
-
-s1 = s[:]
-print(s1)
-
-s = s[1:4]
-print(s1)
-print(s)
-
-mask = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80]
-
-
-def norm(number):
-    return map(lambda m: 0.9 if number & m else 0.1, mask)
-
-
-print(11 / 2)
-print(11 // 2)
+processor = flashtext.KeywordProcessor()
+processor.get_all_keywords()
+print(processor)
